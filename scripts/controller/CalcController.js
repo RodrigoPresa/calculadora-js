@@ -32,13 +32,30 @@ class CalcController {
     isOperator(value){
         return (['/','*','-','+','%'].indexOf(value) > -1);
     }
+     //Pega o última posição do array
+     getLastOperation(){
+        return this._operation[this._operation.length - 1];
+    }
 
     setLastOperation(value){
         this._operation[this._operation.length - 1] = value;
     }
 
+    pushOperation(value){//responsável por fazer o push no array _operation
+        this._operation.push(value);
+        if(this._operation.length > 3){
+            this.calc();
+        }
+    }
+
+    calc(){
+        let last = this._operation.pop();
+        let result = eval(this._operation.join(""));
+        this._operation = [result,last];
+        this.setLastNumberToDisplay();
+    }
+
     addOperation(value){//value = valor do momento em que o btn foi clicado
-        console.log(value);
         if(isNaN(this.getLastOperation())){//getLastOperation = valor anterior ao value
             //String
             if(this.isOperator(value)){
@@ -47,22 +64,33 @@ class CalcController {
                 //outra coisa
                 console.log('a',value);
             }else {
-                this._operation.push(parseInt(value));
+                this.pushOperation(value);
+                this.setLastNumberToDisplay();
             }
         }else {
             //se for número, passa os valores para string, concatena e adiciona na posição do array
-            let newValue = this.getLastOperation().toString() + value.toString();
-            this.setLastOperation(parseInt(newValue));
+            if(isNaN(value)){
+                this.pushOperation(value);
+            }else {
+                let newValue = this.getLastOperation().toString() + value.toString();
+                this.setLastOperation(parseInt(newValue));
+                this.setLastNumberToDisplay();
+            }
+            
         }
-
-        
-        console.log(this._operation);
-    }
-    //Pega o última posição do array
-    getLastOperation(){
-        return this._operation[this._operation.length - 1];
     }
 
+    setLastNumberToDisplay(){
+        let lastNumber;
+        for(let i = this._operation.length-1; i >= 0; i--){
+            if(!this.isOperator(this._operation[i])){
+                lastNumber = this._operation[i];
+                break;
+            }
+        }
+        this.displayCalc = lastNumber;
+    }
+   
     clearAll(){
         this._operation = [];
     }
