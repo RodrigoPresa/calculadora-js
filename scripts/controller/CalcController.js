@@ -11,6 +11,7 @@ class CalcController {
         this._timeEl = document.querySelector("#hora");
         this.initialize();
         this.initButtonsEvents();
+        this.initKeyboard();
     }
 
     initialize(){
@@ -80,7 +81,7 @@ class CalcController {
         }else{
             this._operation = [result];
             if(last) this._operation.push(last);
-        }        
+        }
         this.setLastNumberToDisplay();
     }
 
@@ -89,9 +90,6 @@ class CalcController {
             //String
             if(this.isOperator(value)){
                 this.setLastOperation(value);
-            }else if(isNaN(value)){
-                //outra coisa
-                console.log('a',value);
             }else {
                 this.pushOperation(value);
                 this.setLastNumberToDisplay();
@@ -102,11 +100,24 @@ class CalcController {
                 this.pushOperation(value);
             }else {
                 let newValue = this.getLastOperation().toString() + value.toString();
-                this.setLastOperation(parseInt(newValue));
+                this.setLastOperation(newValue);
                 this.setLastNumberToDisplay();
             }
             
         }
+    }
+
+    addDot(){
+        let lastOperation = this.getLastOperation();
+
+        if(typeof lastOperation === 'string' && lastOperation.split('').indexOf('.') > -1) return;
+
+        if(this.isOperator(lastOperation) || !lastOperation){
+            this.pushOperation('0.');
+        } else{
+            this.setLastOperation(lastOperation.toString() + '.');
+        }
+        this.setLastNumberToDisplay();
     }
 
     getLastItem(isOperator = true){ //Verifica se o último item do array é um operador ou um número e retorna o resultado
@@ -131,6 +142,8 @@ class CalcController {
    
     clearAll(){
         this._operation = [];
+        this._lastNumber = '';
+        this._lastOperator = '';
         this.setLastNumberToDisplay();
     }
 
@@ -170,7 +183,7 @@ class CalcController {
                 this.calc();
                 break;            
             case 'ponto':
-                this.addOperation('.');
+                this.addDot();
                 break; 
             case '0':
             case '1':
@@ -187,6 +200,47 @@ class CalcController {
             default:
                 this.setError();
         }
+    }
+
+    initKeyboard(){
+        document.addEventListener('keyup', e=>{
+            switch(e.key){
+                case 'Escape':
+                    this.clearAll();
+                    break;            
+                case 'Backspace':
+                    this.clearEntry();
+                    break;
+                case '%':
+                case '/':
+                case '*':
+                case '-':
+                case '+':
+                    this.addOperation(e.key);
+                    break;                       
+                case 'Enter':
+                case '=':
+                    this.calc();
+                    break;            
+                case ',':
+                case '.':
+                    this.addDot();
+                    break; 
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    this.addOperation(parseInt(e.key));
+                    break;
+            }        
+        });
+        
     }
 
     initButtonsEvents(){
